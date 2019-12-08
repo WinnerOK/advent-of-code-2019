@@ -4,25 +4,6 @@ import (
 	"fmt"
 )
 
-//Opcodes
-const (
-	ADDITION       = 1
-	MULTIPLICATION = 2
-	INPUT          = 3
-	OUTPUT         = 4
-	JUMP_IF_TRUE   = 5
-	JUMP_IF_FALSE  = 6
-	LESS_THAN      = 7
-	EQUALS         = 8
-	HALT           = 99
-)
-
-//Parameter modes
-const (
-	POSITION  = 0
-	IMMEDIATE = 1
-)
-
 // ref https://play.golang.org/p/Ulyo1H2Bii
 func permutations(arr []int) [][]int {
 	var helper func([]int, int)
@@ -52,20 +33,87 @@ func permutations(arr []int) [][]int {
 	return res
 }
 
+func runAmplifier(source []int, order []int) int {
+	nextInput := 0
+	for _, amplifier := range order {
+		output, _ := SimulateMachine(
+			CreateState(source, []int{amplifier, nextInput}, false),
+		)
+		nextInput = output[len(output)-1]
+	}
+	return nextInput
+}
+
 func GreatestAmplifierSignal(source []int) (int, []int) {
 	maxIDX := 0
 	maxOut := 0
 	possibleOrders := permutations([]int{0, 1, 2, 3, 4})
 	for i, order := range possibleOrders {
-		previousOut := 0
-		for _, amplifier := range order {
-			output := SimulateMachine(source, []int{amplifier, previousOut}, false)
-			previousOut = output[len(output)-1]
+		output := runAmplifier(source, order)
+		if output > maxOut {
+			maxIDX = i
+			maxOut = output
+		}
+	}
+
+	return maxOut, possibleOrders[maxIDX]
+}
+
+func runAmplifierFeedback(source []int, order []int) int {
+	lastOutput := 0
+	amplifierInput := []int{0}
+	amplifiers := []ProgramState{}
+
+	for _, phase := range order {
+		amplifiers = append(amplifiers,
+			CreateState(
+				source,
+				[]int{phase},
+				true,
+			),
+		)
+	}
+
+	countRunningAmp := func() int {
+		result := 0
+		for _, amp := range amplifiers {
+			if amp.PC.running {
+				result += 1
+			}
+		}
+		return result
+	}
+
+	condition := true
+	for ok := true; ok; ok = condition { // do while emulation
+		for i, amp := range amplifiers {
+			if amp.PC.running {
+				amp.input = append(amp.input, amplifierInput...)
+				result, newState := SimulateMachine(amp)
+				amplifiers[i] = newState
+
+				if len(result) > 0 {
+					lastOutput = result[len(result)-1]
+					amplifierInput = result
+				}
+			}
 		}
 
-		if previousOut > maxOut {
+		condition = countRunningAmp() == len(amplifiers)
+	}
+	return lastOutput
+}
+
+func GreatestAmplifierFeedbackSignal(source []int) (int, []int) {
+	maxIDX := 0
+	maxOut := 0
+	possibleOrders := permutations([]int{5, 6, 7, 8, 9})
+	for i, order := range possibleOrders {
+		output := runAmplifierFeedback(source, order)
+
+		if output > maxOut {
 			maxIDX = i
-			maxOut = previousOut
+			maxOut = output
 		}
 	}
 
@@ -76,6 +124,9 @@ func main() {
 	fileInput := readInput("./in.txt")
 	source := stringSliceToIntSlice(fileInput)
 
-	maxOut, maxOrder := GreatestAmplifierSignal(source)
-	fmt.Printf("Part 1| MaxOut: %d, order: %v\n", maxOut, maxOrder)
+	maxOut1, maxOrder1 := GreatestAmplifierSignal(source)
+	fmt.Printf("Part 1| MaxOut: %8d order: %v\n", maxOut1, maxOrder1)
+
+	maxOut2, maxOrder2 := GreatestAmplifierFeedbackSignal(source)
+	fmt.Printf("Part 2| MaxOut: %8d order: %v\n", maxOut2, maxOrder2)
 }

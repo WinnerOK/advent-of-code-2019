@@ -4,6 +4,54 @@ import (
 	"strconv"
 )
 
+//Opcodes
+const (
+	ADDITION       = 1
+	MULTIPLICATION = 2
+	INPUT          = 3
+	OUTPUT         = 4
+	JUMP_IF_TRUE   = 5
+	JUMP_IF_FALSE  = 6
+	LESS_THAN      = 7
+	EQUALS         = 8
+	HALT           = 99
+)
+
+//Parameter modes
+const (
+	POSITION  = 0
+	IMMEDIATE = 1
+)
+
+type ProgramState struct {
+	memory         []int
+	PC             ProgramCounter
+	input          []int
+	inputRead      int
+	stopOnFirstOut bool
+}
+
+func CreateState(source []int, input []int, stopOnFirstOut bool) ProgramState {
+	memory := make([]int, len(source))
+	copy(memory, source)
+	inp := make([]int, len(input))
+	copy(inp, input)
+	return ProgramState{
+		memory: memory,
+		PC: ProgramCounter{
+			running: true,
+			value:   0,
+		},
+		input:          input,
+		inputRead:      0,
+		stopOnFirstOut: stopOnFirstOut,
+	}
+}
+
+func (s *ProgramState)addInput(input []int)  {
+	s.input = append(s.input, input...)
+}
+
 func interpretCode(code int) (int, []int) {
 	CodeStr := strconv.FormatInt(int64(code), 10)
 	var opcode int
@@ -30,14 +78,33 @@ func getOrDefault(container []int, idx int, defaultValue int) int {
 	}
 }
 
-func SimulateMachine(source []int, input []int, stopOnFirstOut bool) []int {
-	memory := make([]int, len(source))
-	copy(memory, source)
-	PC := ProgramCounter{
-		running: true,
-		value:   0,
+func SimulateMachine(state ProgramState) ([]int, ProgramState) {
+	var memory []int
+	var PC ProgramCounter
+	var input []int
+	var inputRead int
+	var stopOnFirstOut bool
+
+	restoreState := func() {
+		memory = state.memory
+		PC = state.PC
+		input = state.input
+		inputRead = state.inputRead
+		stopOnFirstOut = state.stopOnFirstOut
 	}
-	inputRead := 0
+	restoreState()
+
+	saveState := func() ProgramState {
+		newState := ProgramState{
+			memory:         memory,
+			PC:             PC,
+			input:          input,
+			inputRead:      inputRead,
+			stopOnFirstOut: stopOnFirstOut,
+		}
+		return newState
+	}
+
 	output := []int{}
 
 	outputCheck := func() bool {
@@ -176,6 +243,5 @@ func SimulateMachine(source []int, input []int, stopOnFirstOut bool) []int {
 		}
 
 	}
-	//fmt.Printf("Machine state before output: %v\n", memory)
-	return output
+	return output, saveState()
 }
