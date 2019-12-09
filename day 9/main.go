@@ -2,24 +2,21 @@ package main
 
 import (
 	"fmt"
-	"runtime"
-	"runtime/debug"
 )
 
 func main() {
-
-	debug.SetGCPercent(-1)
-
 	fileInput := readInput("./in.txt")
 	source := stringSliceToIntSlice(fileInput)
 
-	state := CreateState(source, []int{1}, false)
-
 	output, _ := SimulateMachine(
-		state,
+		CreateState(source, []int{1}, false),
 	)
 
-	fmt.Printf("%v\n", output)
+	fmt.Printf("Answer part 1: %v\n", output[0])
 
-	runtime.GC()
+	output, _ = SimulateMachine(
+		CreateState(source, []int{2}, false),
+	)
+
+	fmt.Printf("Answer part 2: %v\n", output[0])
 }

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	DEBUG = false
+	Debug = false
 )
 
 var (
@@ -15,27 +15,27 @@ var (
 
 //Opcodes
 const (
-	ADDITION          = 1
-	MULTIPLICATION    = 2
-	INPUT             = 3
-	OUTPUT            = 4
-	JUMP_IF_TRUE      = 5
-	JUMP_IF_FALSE     = 6
-	LESS_THAN         = 7
-	EQUALS            = 8
-	RELATIVE_BASE_ADJ = 9
-	HALT              = 99
+	Addition        = 1
+	Multiplication  = 2
+	Input           = 3
+	Output          = 4
+	JumpIfTrue      = 5
+	JumpIfFalse     = 6
+	LessThan        = 7
+	Equals          = 8
+	RelativeBaseAdj = 9
+	Halt            = 99
 )
 
 //Parameter modes
 const (
-	POSITION  = 0
-	IMMEDIATE = 1
-	RELATIVE  = 2
+	Position  = 0
+	Immediate = 1
+	Relative  = 2
 )
 
 var (
-	DEFAULT_MEM = makeBigInt(0)
+	DefaultMem = makeBigInt(0)
 )
 
 type memoryType = map[string]bigInt
@@ -59,7 +59,7 @@ type ProgramState struct {
 
 func CreateState(source []int, input []int, stopOnFirstOut bool) ProgramState {
 	memory := makeMemory(source)
-	bigInput := []bigInt{}
+	var bigInput []bigInt
 	for _, v := range input {
 		bigInput = append(bigInput, makeBigInt(v))
 	}
@@ -137,7 +137,7 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 		}
 	}
 
-	output := []bigInt{}
+	var output []bigInt
 
 	outputCheck := func() bool {
 		if stopOnFirstOut {
@@ -163,20 +163,20 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 		if value, ok := memory[addr.String()]; ok {
 			return value
 		} else {
-			return DEFAULT_MEM
+			return DefaultMem
 		}
 	}
 
 	printMem := func() {
 		print("map[")
-		for k, v := range memory{
+		for k, v := range memory {
 			fmt.Printf(" %s:%s", k, v.String())
 		}
 		print("]")
 	}
 
 	log := func(s string) {
-		if DEBUG {
+		if Debug {
 			fmt.Printf("step %d| ", step)
 			print(s)
 			printMem()
@@ -191,11 +191,11 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 		deRef := func(readingMode int, address bigInt) bigInt {
 			var result bigInt
 			switch readingMode {
-			case POSITION:
+			case Position:
 				result = memGet(address)
-			case IMMEDIATE:
+			case Immediate:
 				result = address
-			case RELATIVE:
+			case Relative:
 				result = memGet(addBig(relativeBase, address))
 			default:
 				panic("Unknown reading mode")
@@ -204,18 +204,18 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 		}
 
 		param := func(index int) bigInt {
-			return deRef(getOrDefault(readingModes, index-1, POSITION),
+			return deRef(getOrDefault(readingModes, index-1, Position),
 				memGet(addBig(PC.value, makeBigInt(index))))
 		}
 
 		address := func(index int) bigInt {
-			readingMode := getOrDefault(readingModes, index-1, POSITION)
+			readingMode := getOrDefault(readingModes, index-1, Position)
 			addr := memGet(addBig(PC.value, makeBigInt(index)))
 			var result bigInt
 			switch readingMode {
-			case RELATIVE:
+			case Relative:
 				result = addBig(relativeBase, addr)
-			case POSITION:
+			case Position:
 				result = addr
 			default:
 				panic("Unknown reading mode for addr")
@@ -231,7 +231,7 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 			//memSet(memGet(addBig(PC.value, makeBigInt(3))), result)
 			log(fmt.Sprintf("[%s] opcode: %d (add), arg1: %s, arg2: %s, result: %s, memory: ",
 				PC.value.String(), opCode, arg1.String(), arg2.String(), result.String(),
-				))
+			))
 			PC.add(makeBigInt(4))
 		}
 
@@ -342,25 +342,25 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 		}
 
 		switch opCode {
-		case ADDITION:
+		case Addition:
 			addOp()
-		case MULTIPLICATION:
+		case Multiplication:
 			multOp()
-		case HALT:
+		case Halt:
 			haltOp()
-		case INPUT:
+		case Input:
 			inputOp()
-		case OUTPUT:
+		case Output:
 			outputOp()
-		case JUMP_IF_TRUE:
+		case JumpIfTrue:
 			jumpIfTrueOp()
-		case JUMP_IF_FALSE:
+		case JumpIfFalse:
 			jumpIfFalseOp()
-		case LESS_THAN:
+		case LessThan:
 			lessThanOp()
-		case EQUALS:
+		case Equals:
 			equalsOp()
-		case RELATIVE_BASE_ADJ:
+		case RelativeBaseAdj:
 			relativeBaseAdjOp()
 		default:
 			panic("Unexpected opCode")
