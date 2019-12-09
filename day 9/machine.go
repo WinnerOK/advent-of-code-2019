@@ -228,7 +228,6 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 			arg2 := param(2)
 			result := addBig(arg1, arg2)
 			memSet(address(3), result)
-			//memSet(memGet(addBig(PC.value, makeBigInt(3))), result)
 			log(fmt.Sprintf("[%s] opcode: %d (add), arg1: %s, arg2: %s, result: %s, memory: ",
 				PC.value.String(), opCode, arg1.String(), arg2.String(), result.String(),
 			))
@@ -240,7 +239,6 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 			arg2 := param(2)
 			result := makeBigInt(0).Mul(arg1, arg2)
 			memSet(address(3), result)
-			//memSet(memGet(addBig(PC.value, makeBigInt(3))), result)
 			log(fmt.Sprintf("[%s] opcode: %d (mul), arg1: %s, arg2: %s, result: %s, memory: ",
 				PC.value.String(), opCode, arg1.String(), arg2.String(), result.String(),
 			))
@@ -256,7 +254,6 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 
 		inputOp := func() {
 			memSet(address(1), nextInput())
-			//memSet(memGet(addBig(PC.value, makeBigInt(1))),nextInput())
 			log(fmt.Sprintf("[%s] opcode: %d (in),  memory: ",
 				PC.value.String(), opCode,
 			))
@@ -308,7 +305,6 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 				result = makeBigInt(0)
 			}
 			memSet(address(3), result)
-			//memSet(memGet(addBig(PC.value, makeBigInt(3))), result)
 			log(fmt.Sprintf("[%s] opcode: %d (LE), arg1: %s, arg2: %s memory: ",
 				PC.value.String(), opCode, arg1.String(), arg2.String(),
 			))
@@ -325,7 +321,6 @@ func SimulateMachine(state ProgramState) ([]bigInt, ProgramState) {
 				result = makeBigInt(0)
 			}
 			memSet(address(3), result)
-			//memSet(memGet(addBig(PC.value, makeBigInt(3))), result)
 			log(fmt.Sprintf("[%s] opcode: %d (equals), arg1: %s, arg2: %s memory: ",
 				PC.value.String(), opCode, arg1.String(), arg2.String(),
 			))
