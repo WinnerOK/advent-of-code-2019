@@ -2,14 +2,14 @@ package main
 
 type ProgramCounter struct {
 	running bool
-	value   int
+	value   bigInt
 }
 
-func (pc *ProgramCounter) add(offset int) {
-	pc.value += offset
+func (pc *ProgramCounter) add(offset bigInt) {
+	pc.value = makeBigInt(0).Add(pc.value, offset)
 }
 
-func (pc *ProgramCounter) jump(addr int) {
+func (pc *ProgramCounter) jump(addr bigInt) {
 	pc.value = addr
 }
 
