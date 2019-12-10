@@ -6,8 +6,8 @@ const (
 )
 
 type Coordinate struct {
-	X int
-	Y int
+	X     int
+	Y     int
 }
 
 func addCoords(a, b Coordinate) Coordinate {
@@ -24,7 +24,9 @@ func subCoords(a, b Coordinate) Coordinate {
 	}
 }
 
-func smallestDirectionVector(direction Coordinate) Coordinate {
+func smallestDirectionVector(from, to Coordinate) Coordinate {
+	direction := subCoords(to, from)
+
 	var (
 		xDir = 1
 		yDir = 1
@@ -42,6 +44,21 @@ func smallestDirectionVector(direction Coordinate) Coordinate {
 	return Coordinate{direction.X / gcd, direction.Y / gcd}
 }
 
+func isDirectlySeen(from, to Coordinate, asteroidMap AsteroidMap) bool {
+	directionVector := smallestDirectionVector(from, to)
+	reachOther := false
+	invisibleAsteroidCoords := addCoords(from, directionVector)
+	for ; invisibleAsteroidCoords != to; // increase direction vector unless hit desired asteroid
+	invisibleAsteroidCoords = addCoords(invisibleAsteroidCoords, directionVector) {
+		if _, ok := asteroidMap[invisibleAsteroidCoords]; ok {
+			// if hit some other one, then the desired can't be seen directly
+			reachOther = true
+			break
+		}
+	}
+	return !reachOther
+}
+
 func getVisibleAsteroidsCount(current Coordinate, asteroidMap AsteroidMap) int {
 	visibleCnt := 0
 	for asteroidCoords, _ := range asteroidMap {
@@ -49,17 +66,7 @@ func getVisibleAsteroidsCount(current Coordinate, asteroidMap AsteroidMap) int {
 			continue
 		}
 
-		directionVector := smallestDirectionVector(subCoords(asteroidCoords, current))
-		reachOther := false
-		invisibleAsteroidCoords := addCoords(current, directionVector)
-		for ; invisibleAsteroidCoords != asteroidCoords;
-		invisibleAsteroidCoords = addCoords(invisibleAsteroidCoords, directionVector) {
-			if _, ok := asteroidMap[invisibleAsteroidCoords]; ok {
-				reachOther = true
-				break
-			}
-		}
-		if ! reachOther {
+		if isDirectlySeen(current, asteroidCoords, asteroidMap) {
 			visibleCnt += 1
 		}
 	}
