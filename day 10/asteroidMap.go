@@ -1,9 +1,5 @@
 package main
 
-import (
-	"math"
-)
-
 const (
 	Asteroid = '#'
 	Space    = '.'
@@ -28,41 +24,6 @@ func subCoords(a, b Coordinate) Coordinate {
 	}
 }
 
-func scalarMulCoords(a Coordinate, i int) Coordinate {
-	return Coordinate{
-		X: a.X * i,
-		Y: a.Y * i,
-	}
-}
-
-func getAsteroidMapBoundaries(m AsteroidMap) (int, int, int, int) {
-	xMax := math.MinInt64
-	yMax := math.MinInt64
-
-	xMin := math.MaxInt64
-	yMin := math.MaxInt64
-
-	for k, _ := range m {
-		if k.X > xMax {
-			xMax = k.X
-		}
-
-		if k.X < xMin {
-			xMin = k.X
-		}
-
-		if k.Y > yMax {
-			yMax = k.Y
-		}
-
-		if k.Y < yMin {
-			yMin = k.Y
-		}
-	}
-
-	return xMin, yMin, xMax, yMax
-}
-
 func smallestDirectionVector(direction Coordinate) Coordinate {
 	var (
 		xDir = 1
@@ -78,42 +39,32 @@ func smallestDirectionVector(direction Coordinate) Coordinate {
 	}
 
 	gcd := GCD(direction.X*xDir, direction.Y*yDir) // make both coordinates positive
-	return Coordinate{  direction.X / gcd, direction.Y / gcd}
+	return Coordinate{direction.X / gcd, direction.Y / gcd}
 }
 
 func getVisibleAsteroidsCount(current Coordinate, asteroidMap AsteroidMap) int {
-	xMin, yMin, xMax, yMax := getAsteroidMapBoundaries(asteroidMap)
-	for asteroidCoords, visible := range asteroidMap {
+	visibleCnt := 0
+	for asteroidCoords, _ := range asteroidMap {
 		if asteroidCoords == current {
 			continue
 		}
-		if visible {
-			directionVector := smallestDirectionVector(subCoords(asteroidCoords, current))
-			canBlock := false
-			for i := 1; true; i++ {
-				invisibleAsteroidCoords := addCoords(current, scalarMulCoords(directionVector, i))
-				if invisibleAsteroidCoords.X < xMin || invisibleAsteroidCoords.Y < yMin || // make sure you are not
-					invisibleAsteroidCoords.X > xMax || invisibleAsteroidCoords.Y > yMax { // out of bounds
-					break
-				} else if invisibleAsteroidCoords == asteroidCoords { // only from now the asteroid can block others
-					canBlock = true
-					continue
-				} else {
-					if visible, ok := asteroidMap[invisibleAsteroidCoords]; ok && visible && canBlock {
-						asteroidMap[invisibleAsteroidCoords] = false
-						//fmt.Printf("From %v: %v blockes %v\n", current, asteroidCoords, invisibleAsteroidCoords)
-					}
-				}
+
+		directionVector := smallestDirectionVector(subCoords(asteroidCoords, current))
+		reachOther := false
+		invisibleAsteroidCoords := addCoords(current, directionVector)
+		for ; invisibleAsteroidCoords != asteroidCoords;
+		invisibleAsteroidCoords = addCoords(invisibleAsteroidCoords, directionVector) {
+			if _, ok := asteroidMap[invisibleAsteroidCoords]; ok {
+				reachOther = true
+				break
 			}
 		}
-	}
-	visibleCnt := 0
-	for _, visible := range asteroidMap {
-		if visible {
+		if ! reachOther {
 			visibleCnt += 1
 		}
 	}
-	return visibleCnt - 1
+
+	return visibleCnt
 }
 
 type AsteroidMap map[Coordinate]bool
