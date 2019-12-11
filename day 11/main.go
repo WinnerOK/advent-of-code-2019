@@ -77,7 +77,7 @@ func draw(painted map[string]int) {
 	width := int(math.Abs(float64(xMin)) + math.Abs(float64(xMax)) + 1)
 	heigh := int(math.Abs(float64(yMin)) + math.Abs(float64(yMax)) + 1)
 	canvas := make([][]int, heigh)
-	for y := range canvas {
+	for y := len(canvas)-1; y >= 0; y-- {
 		canvas[y] = make([]int, width)
 		for x := range canvas[y] {
 			correctedCoord := Coordinate{
@@ -88,7 +88,6 @@ func draw(painted map[string]int) {
 			canvas[y][x] = getOrDefaultMap(painted,
 				correctedCoord.str(),
 				BLACK)
-
 			out(canvas[y][x])
 		}
 		println()
@@ -102,5 +101,5 @@ func main() {
 	fmt.Printf("Part 1 answer: %d\n", len(painted))
 
 	painted = paint(source, WHITE)
-	draw(painted) // draws mirrored and upside-down
+	draw(painted)
 }
