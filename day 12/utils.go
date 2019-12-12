@@ -34,3 +34,29 @@ func stringSliceToIntSlice(strs []string) []int {
 func IntAbs(num int) int {
 	return int(math.Abs(float64(num)))
 }
+
+func all(bools ...bool) bool {
+	for _, exp := range bools {
+		if !exp {
+			return false
+		}
+	}
+	return true
+}
+
+func GCD(a, b int) int {
+
+	for a != b {
+		if a > b {
+			a -= b
+		} else {
+			b -= a
+		}
+	}
+
+	return a
+}
+
+func LCM(a, b int) int {
+	return (a * b) / GCD(a, b)
+}

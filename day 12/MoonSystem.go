@@ -27,7 +27,7 @@ func (ms *MoonSystem) applyGravity() {
 }
 
 func (ms *MoonSystem) applyVelocity() {
-	for i := range ms.moons{
+	for i := range ms.moons {
 		ms.moons[i].move()
 	}
 }
@@ -41,19 +41,46 @@ func (ms MoonSystem) totalEnergy() int {
 }
 
 func (ms *MoonSystem) simulateStep() {
-	//ms.resetVelocities()
 	ms.applyGravity()
 	ms.applyVelocity()
 	ms.steps += 1
 }
 
-func (ms *MoonSystem) resetVelocities()  {
-	for i := range ms.moons{
+func (ms *MoonSystem) resetVelocities() {
+	for i := range ms.moons {
 		ms.moons[i].resetVelocity()
 	}
 }
 
-func (ms MoonSystem) String() string{
+func (ms *MoonSystem) velX() int {
+	result := 0
+	for _, moon := range ms.moons {
+		result += moon.velocity.X
+	}
+	return result
+}
+
+func (ms *MoonSystem) velY() int {
+	result := 0
+	for _, moon := range ms.moons {
+		result += moon.velocity.Y
+	}
+	return result
+}
+
+func (ms *MoonSystem) velZ() int {
+	result := 0
+	for _, moon := range ms.moons {
+		result += moon.velocity.Z
+	}
+	return result
+}
+
+func (ms *MoonSystem) axisVel() []int {
+	return []int{ms.velX(), ms.velY(), ms.velZ()}
+}
+
+func (ms MoonSystem) String() string {
 	result := fmt.Sprintf("After step %d\n", ms.steps)
 	for _, moon := range ms.moons {
 		result += fmt.Sprintf("%s\n", moon.String())
