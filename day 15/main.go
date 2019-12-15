@@ -43,7 +43,12 @@ func printBoard(board [][]string) {
 }
 
 func exploreBoard(source []int, board [][]string, startX, startY int) ([]int, Coordinate) {
-
+	used := make([][]bool, len(board))
+	for i := range used {
+		used[i] = make([]bool, len(board[i]))
+	}
+	boardGetUsed := func(coordinate Coordinate) bool { return used[coordinate.Y][coordinate.X] }
+	boardSetUsed := func(coordinate Coordinate) { used[coordinate.Y][coordinate.X] = true }
 	isOxygenFound := false
 	queue := list.New()
 	state := CreateState(source, []int{}, 1)
@@ -58,6 +63,7 @@ func exploreBoard(source []int, board [][]string, startX, startY int) ([]int, Co
 				exploringPos:  exploring,
 			},
 		)
+		boardSetUsed(exploring)
 	}
 
 	var goodHistory []int
@@ -79,16 +85,10 @@ func exploreBoard(source []int, board [][]string, startX, startY int) ([]int, Co
 			board[step.exploringPos.Y][step.exploringPos.X] = Wall
 		case OK:
 			for _, dir := range directions {
-				if lastStep := step.stepDirection;
-					lastStep == SOUTH && dir == NORTH ||
-						lastStep == NORTH && dir == SOUTH ||
-						lastStep == WEST && dir == EAST ||
-						lastStep == EAST && dir == WEST {
-					// prohibit stepping back
-					continue
-				} else {
-					exploring := Coordinate{step.exploringPos.X, step.exploringPos.Y}
-					exploring.move(dir)
+				exploring := Coordinate{step.exploringPos.X, step.exploringPos.Y}
+				exploring.move(dir)
+				if !boardGetUsed(exploring) {
+					boardSetUsed(exploring)
 					tmp := make([]int, len(step.stepHistory))
 					copy(tmp, step.stepHistory)
 					tmp = append(tmp, dir)
@@ -154,7 +154,7 @@ func bfs(board [][]string, start Coordinate) int {
 			nextIntervalLength = 0
 		}
 	}
-	return step-1
+	return step - 1
 }
 
 func main() {
